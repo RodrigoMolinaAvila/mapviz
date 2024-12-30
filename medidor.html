@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa y Medidores</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px;
+    }
+    #map-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+    }
+    #map {
+      width: 60%;
+      height: 800px;
+      border: 1px solid #ccc;
+      position: relative;
+    }
+    #gauges-left, #gauges-right {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 20%;
+      align-items: center;
+      justify-content: space-around;
+    }
+    svg {
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #legend {
+      margin-top: 20px;
+      text-align: center;
+      width: 80%;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin: 5px;
+    }
+    .color-box {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+    }
+    .country-name {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      justify-content: center;
+    }
+    .country-name img {
+      height: 16px;
+      width: 16px;
+    }
+    #tooltip {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #ccc;
+      padding: 5px;
+      font-size: 12px;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #tooltip img {
+      height: 16px;
+      width: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Proporción Indígena por País</h1>
+  
+  <div id="container">
+    <div id="map-container">
+      <div id="gauges-left"></div>
+      <div id="map"></div>
+      <div id="gauges-right"></div>
+    </div>
+    <div id="legend">
+      <div class="legend-item">
+        <div class="color-box" style="background-color: #e5f5e0;"></div> 0% - 10%
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background-color: #a1d99b;"></div> 10% - 20%
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background-color: #31a354;"></div> 20% - 30%
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background-color: #006d2c;"></div> > 30%
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Datos de proporción indígena por código de país
+    const data = [
+      { code: "ARG", proportion: 2.8, flag: "ico/arg.png" },
+      { code: "BOL", proportion: 41.5, flag: "ico/bol.png" },
+      { code: "COL", proportion: 3.9, flag: "ico/col.png" },
+      { code: "ECU", proportion: 7.7, flag: "ico/ecu.png" },
+      { code: "GTM", proportion: 43.4, flag: "ico/gtm.png" },
+      { code: "MEX", proportion: 18.4, flag: "ico/mex.png" },
+      { code: "PER", proportion: 20.4, flag: "ico/per.png" },
+      { code: "VEN", proportion: 2.7, flag: "ico/ven.png" }
+    ];
+
+    // Crear el mapa
+    const width = 800, height = 800;
+    const svgMap = d3.select("#map").append("svg")
+      .attr("width", "100%")
+      .attr("height", "100%");
+
+    const projection = d3.geoMercator()
+      .scale(500) // Ajustar escala para México hasta el sur de Argentina
+      .translate([width / 2, height / 2]) // Centrar el mapa en Perú
+      .center([-75, -10]); // Coordenadas aproximadas para centrar en Perú
+
+    const path = d3.geoPath().projection(projection);
+    const colorScale = d3.scaleThreshold()
+      .domain([10, 20, 30])
+      .range(["#e5f5e0", "#a1d99b", "#31a354", "#006d2c"]);
+
+    d3.json("custom.geo.json").then(geojson => {
+      svgMap.selectAll("path")
+        .data(geojson.features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("fill", d => {
+          const code = d.properties.sov_a3;
+          const found = data.find(country => country.code === code);
+          return found ? colorScale(found.proportion) : "#ccc";
+        })
+        .attr("stroke", "#333")
+        .attr("stroke-width", 0.5)
+        .on("mouseover", function (event, d) {
+          const code = d.properties.sov_a3;
+          const found = data.find(country => country.code === code);
+          const proportion = found ? found.proportion : 0;
+          const flag = found ? found.flag : null;
+          const tooltip = d3.select("#map-container").append("div")
+            .attr("id", "tooltip")
+            .html(`
+              <strong>${code}</strong>
+              <img src="${flag}" alt="${code}">
+              <br>${proportion}% población indígena
+            `)
+            .style("left", `${event.pageX + 5}px`)
+            .style("top", `${event.pageY + 5}px`);
+        })
+        .on("mousemove", function (event) {
+          d3.select("#tooltip")
+            .style("left", `${event.pageX + 5}px`)
+            .style("top", `${event.pageY + 5}px`);
+        })
+        .on("mouseout", function () {
+          d3.select("#tooltip").remove();
+        });
+
+      svgMap.selectAll("text")
+        .data(geojson.features)
+        .enter()
+        .append("text")
+        .attr("x", d => path.centroid(d)[0])
+        .attr("y", d => path.centroid(d)[1])
+        .attr("text-anchor", "middle")
+        .style("font-size", "10px")
+        .text(d => d.properties.sov_a3);
+    });
+
+    // Crear los gráficos de medidor
+    const gaugeWidth = 150, gaugeHeight = 200; // Expandir altura de los medidores
+
+    data.forEach((d, i) => {
+      const container = i < 4 ? "#gauges-left" : "#gauges-right";
+
+      const svgGauge = d3.select(container)
+        .append("svg")
+        .attr("width", gaugeWidth)
+        .attr("height", gaugeHeight);
+
+      const arc = d3.arc()
+        .innerRadius(50)
+        .outerRadius(70)
+        .startAngle(-Math.PI / 2);
+
+      svgGauge.append("path")
+        .datum({ endAngle: Math.PI / 2 })
+        .style("fill", "#ddd")
+        .attr("d", arc)
+        .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
+
+      const foreground = svgGauge.append("path")
+        .datum({ endAngle: -Math.PI / 2 })
+        .style("fill", colorScale(d.proportion))
+        .attr("d", arc)
+        .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
+
+      foreground.transition()
+        .duration(1000)
+        .attrTween("d", () => {
+          const interpolate = d3.interpolate(-Math.PI / 2, (d.proportion / 100) * Math.PI - Math.PI / 2);
+          return t => arc({ endAngle: interpolate(t) });
+        });
+
+      svgGauge.append("text")
+        .attr("x", gaugeWidth / 2)
+        .attr("y", gaugeHeight / 2 + 15)
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .style("font-weight", "bold")
+        .text(`${d.proportion}%`);
+
+      const countryContainer = svgGauge.append("foreignObject")
+        .attr("x", gaugeWidth / 2 - 40)
+        .attr("y", gaugeHeight - 40)
+        .attr("width", 80)
+        .attr("height", 30);
+
+      countryContainer.append("xhtml:div")
+        .attr("class", "country-name")
+        .html(`<span>${d.code}</span> <img src="${d.flag}" alt="${d.code}">`);
+    });
+  </script>
+</body>
+</html>

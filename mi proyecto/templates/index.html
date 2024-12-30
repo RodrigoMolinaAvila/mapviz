@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Universidades y Proporción Indígena</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px;
+    }
+    #map-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+    }
+    #map {
+      width: 70%;
+      height: 900px;
+      border: 1px solid #ccc;
+      position: relative;
+    }
+    #gauges-left, #gauges-right {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 15%;
+      align-items: center;
+      justify-content: space-around;
+    }
+    svg {
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #legend {
+      margin-top: 20px;
+      text-align: center;
+      width: 70%;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin: 5px;
+    }
+    .color-box {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+    }
+    .country-name {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      justify-content: center;
+    }
+    .country-name img {
+      height: 16px;
+      width: 16px;
+    }
+    #tooltip {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #ccc;
+      padding: 5px;
+      font-size: 12px;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    #tooltip img {
+      height: 16px;
+      width: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Proporción Indígena por País y Universidades</h1>
+  
+  <div id="container">
+    <div id="map-container">
+      <div id="gauges-left"></div>
+      <div id="map"></div>
+      <div id="gauges-right"></div>
+    </div>
+    <div id="legend">
+      <div class="legend-item">
+        <div class="color-box" style="background-color: #e5f5e0;"></div> 0% - 10%
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background-color: #a1d99b;"></div> 10% - 20%
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background-color: #31a354;"></div> 20% - 30%
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background-color: #006d2c;"></div> > 30%
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const data = [
+      { code: "ARG", proportion: 2.8, flag: "ico/arg.png" },
+      { code: "BOL", proportion: 41.5, flag: "ico/bol.png" },
+      { code: "COL", proportion: 3.9, flag: "ico/col.png" },
+      { code: "ECU", proportion: 7.7, flag: "ico/ecu.png" },
+      { code: "GTM", proportion: 43.4, flag: "ico/gtm.png" },
+      { code: "HND", proportion: 7.6, flag: "ico/hon.png" },
+      { code: "NIC", proportion: 5.5, flag: "ico/nic.png" },
+      { code: "MEX", proportion: 18.4, flag: "ico/mex.png" },
+      { code: "PER", proportion: 20.4, flag: "ico/per.png" },
+      { code: "VEN", proportion: 2.7, flag: "ico/ven.png" }
+    ];
+
+    const universities = [
+      { name: "Instituto de Educación Superior CIFMA", location: "Chaco", lat: -27.4606, lon: -58.9839, code: "ARG" },
+      { name: "Universidad quechua Casimiro Huanca", location: "Chimoré", lat: -16.9898, lon: -65.1386, code: "BOL" },
+      { name: "Universidad Indígena Aymara Tupac Katari", location: "Warisata", lat: -16.3333, lon: -68.3833, code: "BOL" },
+      { name: "Universidad Gurani de Tierra Bajas Apiaguaiki Tüpa", location: "Ivo", lat: -19.0301, lon: -63.6129, code: "BOL" },
+      { name: "Universidad Autónoma Indígena Intercultural", location: "Popayán", lat: 2.4382, lon: -76.6132, code: "COL" },
+      { name: "Universidad Intercultural Amawtay Wasi", location: "Quito", lat: -0.1807, lon: -78.4678, code: "ECU" },
+      { name: "Instituto Superior Pedagógico Intercultural Bilingüe Jaime Roldós Aguilera", location: "Colta", lat: -1.7338, lon: -78.6176, code: "ECU" },
+      { name: "Instituto Superior Pedagógico Intercultural Bilingüe Quilloac", location: "Cañar", lat: -2.5499, lon: -78.9396, code: "ECU" },
+      { name: "Instituto Superior Pedagógico Bilingüe Intercultural Martha Bucaram de Roldós", location: "Sucumbíos", lat: 0.0922, lon: -76.705, code: "ECU" },
+      { name: "Instituto Superior Pedagógico Intercultural Bilingüe \"Canelos\"", location: "Pastaza", lat: -1.5057, lon: -77.9861, code: "ECU" },
+      { name: "Universidad Maya Kaqchikel", location: "Chimaltenango", lat: 14.6624, lon: -90.8200, code: "GTM" },
+      { name: "Universidad Ixil", location: "Ixil", lat: 15.5078, lon: -91.6031, code: "GTM" },
+      { name: "Universidad Indígena y de los Pueblos", location: "Lempira", lat: 14.2069, lon: -88.5923, code: "HND" },
+      { name: "Universidad Veracruzana Intercultural", location: "Xalapa", lat: 19.5329, lon: -96.9279, code: "MEX" },
+      { name: "Universidad intercultural de los pueblos del Sur (UNISUR)", location: "Guerrero", lat: 17.5648, lon: -99.5061, code: "MEX" },
+      { name: "Universidad Intercultural Maya de Quintana Roo", location: "Quintana Roo", lat: 19.1817, lon: -88.4791, code: "MEX" },
+      { name: "Universidad Intercultural de Chiapas", location: "Chiapas", lat: 16.7569, lon: -93.1292, code: "MEX" },
+      { name: "Escuela Normal Indígena Intercultural Bilingüe Jacinto Canek", location: "Zinacantán", lat: 16.7354, lon: -92.6988, code: "MEX" },
+      { name: "Universidad Autónoma Indígena de México", location: "Mochicahui", lat: 25.7939, lon: -108.9396, code: "MEX" },
+      { name: "Instituto Intercultural Ñöñho", location: "San Ildefonso Tultepec", lat: 20.1811, lon: -99.8921, code: "MEX" },
+      { name: "Universidad Intercultural del Estado de México", location: "Estado de México", lat: 19.3333, lon: -99.6667, code: "MEX" },
+      { name: "Universidad Intercultural del Estado de Guerrero", location: "Estado de Guerrero", lat: 17.3333, lon: -99.6667, code: "MEX" },
+      { name: "Universidad Intercultural del Estado de Puebla", location: "Estado de Puebla", lat: 18.8333, lon: -97.8333, code: "MEX" },
+      { name: "Universidad Intercultural Indígena de Michoacán", location: "Estado de Michoacán", lat: 19.3333, lon: -101.6667, code: "MEX" },
+      { name: "Universidad Intercultural de San Luis de Potosí", location: "Estado de San Luis Potosí", lat: 22.1567, lon: -100.9855, code: "MEX" },
+      { name: "Universidad Intercultural del Estado de Tabasco", location: "Estado de Tabasco", lat: 18.0, lon: -92.8333, code: "MEX" },
+      { name: "Universidad Intercultural del Estado de Hidalgo", location: "Estado de Hidalgo", lat: 20.0911, lon: -98.7624, code: "MEX" },
+      { name: "Universidad Intercultural de Baja California", location: "San Quintín", lat: 30.5384, lon: -115.9512, code: "MEX" },
+      { name: "Universidad Intercultural de Campeche", location: "Campeche", lat: 19.845, lon: -90.5238, code: "MEX" },
+      { name: "Universidad Intercultural de Tlaxcala", location: "San Juan Ixtenco", lat: 19.2527, lon: -97.8544, code: "MEX" },
+      { name: "Universidad Intercultural de Colima", location: "Estado de Colima", lat: 19.1223, lon: -104.0072, code: "MEX" },
+      { name: "Universidad Intercultural del Estado de Guanajuato", location: "Estado de Guanajuato", lat: 21.019, lon: -101.2574, code: "MEX" },
+      { name: "Universidad del Pueblo Yaqui", location: "Sonora", lat: 29.2985, lon: -110.3309, code: "MEX" },
+      { name: "Universidad Intercultural del Pueblo", location: "Oaxaca", lat: 17.0669, lon: -96.7216, code: "MEX" },
+      { name: "Universidad de las Regiones Autónomas de la Costa Caribe Nicaragüense (URACCAN)", location: "Managua", lat: 12.1364, lon: -86.2514, code: "NIC" },
+      { name: "Bluefields Indian & Caribbean University", location: "Bluefields", lat: 12.0042, lon: -83.7644, code: "NIC" },
+      { name: "Universidad Nacional Intercultural de la Amazonía", location: "Pucallpa", lat: -8.3791, lon: -74.5539, code: "PER" },
+      { name: "Universidad Nacional Intercultural de la Selva Central \"Juan Santos Atahualpa\"", location: "La Merced", lat: -11.0687, lon: -75.3466, code: "PER" },
+      { name: "Universidad Nacional Experimental Indígena del Tauca", location: "Quillabamba", lat: -12.8692, lon: -72.6907, code: "PER" },
+      { name: "Universidad Nacional Intercultural Fabiola Salazar Leguía de Bagua", location: "Bagua", lat: -5.6361, lon: -78.5287, code: "PER" },
+      { name: "Universidad Nacional Experimental Indígena del Tauca", location: "Bolívar", lat: 8.134, lon: -63.537, code: "VEN" }
+    ];
+
+    const width = 1400, height = 1000;
+    const svgMap = d3.select("#map").append("svg")
+      .attr("width", "100%")
+      .attr("height", "100%");
+
+    const projection = d3.geoMercator()
+      .scale(400) // Final scale adjustment
+      .center([-100, -10])
+      .translate([width / 2, height / 2]);
+
+    const path = d3.geoPath().projection(projection);
+
+    const colorScale = d3.scaleThreshold()
+      .domain([10, 20, 30])
+      .range(["#e5f5e0", "#a1d99b", "#31a354", "#006d2c"]);
+
+    d3.json("custom.geo.json").then(geojson => {
+      svgMap.selectAll("path")
+        .data(geojson.features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("fill", d => {
+          const code = d.properties.sov_a3;
+          const found = data.find(country => country.code === code);
+          return found ? colorScale(found.proportion) : "#ccc";
+        })
+        .attr("stroke", "#333")
+        .attr("stroke-width", 0.5)
+        .on("mouseover", function(event, d) {
+          const code = d.properties.sov_a3;
+          const found = data.find(country => country.code === code);
+          const universitiesInCountry = universities.filter(u => u.code === code);
+          const universityNames = universitiesInCountry.map(u => `${u.name} (${u.location})`).join("<br>");
+
+          const tooltip = d3.select("#map-container").append("div")
+            .attr("id", "tooltip")
+            .html(`
+              <strong>${d.properties.name}</strong><br>
+              <img src="${found.flag}" alt="${code}" style="height:16px;width:16px;"> Proporción indígena: ${found ? found.proportion : 0}%<br>
+              Universidades: <br>${universityNames || "Ninguna"}
+            `)
+            .style("left", `${event.pageX + 5}px`)
+            .style("top", `${event.pageY + 5}px`)
+            .style("display", "block");
+        })
+        .on("mousemove", event => {
+          d3.select("#tooltip")
+            .style("left", `${event.pageX + 5}px`)
+            .style("top", `${event.pageY + 5}px`);
+        })
+        .on("mouseout", () => {
+          d3.select("#tooltip").remove();
+        });
+
+      svgMap.selectAll("circle")
+        .data(universities)
+        .enter()
+        .append("circle")
+        .attr("cx", d => projection([d.lon, d.lat])[0])
+        .attr("cy", d => projection([d.lon, d.lat])[1])
+        .attr("r", 5)
+        .attr("fill", "red")
+        .on("mouseover", (event, d) => {
+          const tooltip = d3.select("#map-container").append("div")
+            .attr("id", "tooltip")
+            .html(`<strong>${d.name}</strong><br>${d.location}`)
+            .style("left", `${event.pageX + 5}px`)
+            .            style("top", `${event.pageY + 5}px`)
+            .style("display", "block");
+        })
+        .on("mousemove", event => {
+          d3.select("#tooltip")
+            .style("left", `${event.pageX + 5}px`)
+            .style("top", `${event.pageY + 5}px`);
+        })
+        .on("mouseout", () => {
+          d3.select("#tooltip").remove();
+        });
+    });
+
+    // Create the gauge charts
+    const gaugeWidth = 150, gaugeHeight = 200;
+
+    data.forEach((d, i) => {
+      const container = i < 5 ? "#gauges-left" : "#gauges-right";
+
+      const svgGauge = d3.select(container)
+        .append("svg")
+        .attr("width", gaugeWidth)
+        .attr("height", gaugeHeight);
+
+      const arc = d3.arc()
+        .innerRadius(50)
+        .outerRadius(70)
+        .startAngle(-Math.PI / 2);
+
+      svgGauge.append("path")
+        .datum({ endAngle: Math.PI / 2 })
+        .style("fill", "#ddd")
+        .attr("d", arc)
+        .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
+
+      const foreground = svgGauge.append("path")
+        .datum({ endAngle: -Math.PI / 2 })
+        .style("fill", colorScale(d.proportion))
+        .attr("d", arc)
+        .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
+
+      foreground.transition()
+        .duration(1000)
+        .attrTween("d", () => {
+          const interpolate = d3.interpolate(-Math.PI / 2, (d.proportion / 100) * Math.PI - Math.PI / 2);
+          return t => arc({ endAngle: interpolate(t) });
+        });
+
+      svgGauge.append("text")
+        .attr("x", gaugeWidth / 2)
+        .attr("y", gaugeHeight / 2 + 15)
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .style("font-weight", "bold")
+        .text(`${d.proportion}%`);
+
+      const countryContainer = svgGauge.append("foreignObject")
+        .attr("x", gaugeWidth / 2 - 40)
+        .attr("y", gaugeHeight - 40)
+        .attr("width", 80)
+        .attr("height", 30);
+
+      countryContainer.append("xhtml:div")
+        .attr("class", "country-name")
+        .html(`<span>${d.code}</span> <img src="${d.flag}" alt="${d.code}">`);
+    });
+  </script>
+</body>
+</html>
+
