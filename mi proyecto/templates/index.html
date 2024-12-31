@@ -85,10 +85,20 @@
       height: 16px;
       width: 16px;
     }
+    .highlight {
+      stroke: #ffcc00;
+      stroke-width: 2px;
+      fill-opacity: 0.8;
+    }
+    .gauge-highlight {
+      border: 5px solid #000000;
+      border-radius: 10px;
+      padding: 0px;
+    }
   </style>
 </head>
 <body>
-  <h1 style="text-align: center;">Proporción Indígena por País y Universidades</h1>
+  <h1 style="text-align: center;">Proporción de Población Indígena y Universidades</h1>
   
   <div id="container">
     <div id="map-container">
@@ -176,7 +186,7 @@
       .attr("height", "100%");
 
     const projection = d3.geoMercator()
-      .scale(400) // Final scale adjustment
+      .scale(400) // modificar para ajustar el tamaño y posición del mapa
       .center([-100, -10])
       .translate([width / 2, height / 2]);
 
@@ -205,7 +215,13 @@
           const universitiesInCountry = universities.filter(u => u.code === code);
           const universityNames = universitiesInCountry.map(u => `${u.name} (${u.location})`).join("<br>");
 
-          const tooltip = d3.select("#map-container").append("div")
+          d3.select(this).classed("highlight", true); // Agregar clase para resaltar
+          const gaugeContainer = document.querySelector(`[data-code='${code}']`);
+          if (gaugeContainer) {
+            gaugeContainer.classList.add("gauge-highlight");
+          }
+
+          const tooltip = d3.select("body").append("div")
             .attr("id", "tooltip")
             .html(`
               <strong>${d.properties.name}</strong><br>
@@ -221,7 +237,15 @@
             .style("left", `${event.pageX + 5}px`)
             .style("top", `${event.pageY + 5}px`);
         })
-        .on("mouseout", () => {
+        .on("mouseout", function() {
+          d3.select(this).classed("highlight", false); // Remover clase para quitar el resaltado
+          const code = d3.select(this).datum().properties.sov_a3;
+
+                    const gaugeContainer = document.querySelector(`[data-code='${code}']`);
+          if (gaugeContainer) {
+            gaugeContainer.classList.remove("gauge-highlight");
+          }
+
           d3.select("#tooltip").remove();
         });
 
@@ -238,7 +262,7 @@
             .attr("id", "tooltip")
             .html(`<strong>${d.name}</strong><br>${d.location}`)
             .style("left", `${event.pageX + 5}px`)
-            .            style("top", `${event.pageY + 5}px`)
+            .style("top", `${event.pageY + 5}px`)
             .style("display", "block");
         })
         .on("mousemove", event => {
@@ -251,13 +275,16 @@
         });
     });
 
-    // Create the gauge charts
+    // Crear los medidores con referencias de datos para resaltar
     const gaugeWidth = 150, gaugeHeight = 200;
 
     data.forEach((d, i) => {
       const container = i < 5 ? "#gauges-left" : "#gauges-right";
 
       const svgGauge = d3.select(container)
+        .append("div")
+        .attr("data-code", d.code) // Agregar atributo para identificar cada país
+        .style("text-align", "center")
         .append("svg")
         .attr("width", gaugeWidth)
         .attr("height", gaugeHeight);
@@ -308,3 +335,4 @@
 </body>
 </html>
 
+         

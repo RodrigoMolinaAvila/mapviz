@@ -93,12 +93,12 @@
     .gauge-highlight {
       border: 5px solid #000000;
       border-radius: 10px;
-      padding: 5px;
+      padding: 0px;
     }
   </style>
 </head>
 <body>
-  <h1 style="text-align: center;">Proporción Indígena por País y Universidades</h1>
+  <h1 style="text-align: center;">Proporción de Población Indígena y Universidades</h1>
   
   <div id="container">
     <div id="map-container">
@@ -221,7 +221,7 @@
             gaugeContainer.classList.add("gauge-highlight");
           }
 
-          const tooltip = d3.select("#map-container").append("div")
+          const tooltip = d3.select("body").append("div")
             .attr("id", "tooltip")
             .html(`
               <strong>${d.properties.name}</strong><br>
