@@ -14,35 +14,35 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 20px;
+      margin: 40px;
     }
     #map-container {
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      width: 40%;
+      width: 50%;
     }
     #map {
-      width: 80%;
-      height: 900px;
+      width: 60%;
+      height: 600px;
       border: 1px solid #ccc;
       position: relative;
     }
     #gauges-left, #gauges-right {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 15%;
-      align-items: center;
-      justify-content: space-around;
-    }
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 15%;
+    align-items: center;
+}
+
     svg {
       background-color: #f9f9f9;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     #legend {
-      margin-top: -190px;
+      margin-top: -250px;
       text-align: center;
       width: 70%;
       display: flex;
@@ -53,7 +53,7 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      margin: 5px;
+      margin: 1px;
     }
     .color-box {
       width: 20px;
@@ -185,9 +185,11 @@
       .attr("width", "100%")
       .attr("height", "100%");
 
+
+      
     const projection = d3.geoMercator()
-      .scale(500) // modificar para ajustar el tamaño y posición del mapa
-      .center([-50, -20])
+      .scale(299) // modificar para ajustar el tamaño y posición del mapa
+      .center([17, -50])
       .translate([width / 2, height / 2]);
 
     const path = d3.geoPath().projection(projection);
@@ -276,7 +278,7 @@
     });
 
     // Crear los medidores con referencias de datos para resaltar
-    const gaugeWidth = 150, gaugeHeight = 200;
+    const gaugeWidth = 150, gaugeHeight = 150;
 
     data.forEach((d, i) => {
       const container = i < 5 ? "#gauges-left" : "#gauges-right";
