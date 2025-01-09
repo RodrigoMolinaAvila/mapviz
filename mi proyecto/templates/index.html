@@ -20,10 +20,10 @@
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      width: 100%;
+      width: 40%;
     }
     #map {
-      width: 70%;
+      width: 80%;
       height: 900px;
       border: 1px solid #ccc;
       position: relative;
@@ -42,7 +42,7 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     #legend {
-      margin-top: 20px;
+      margin-top: -190px;
       text-align: center;
       width: 70%;
       display: flex;
@@ -186,8 +186,8 @@
       .attr("height", "100%");
 
     const projection = d3.geoMercator()
-      .scale(400) // modificar para ajustar el tamaño y posición del mapa
-      .center([-100, -10])
+      .scale(500) // modificar para ajustar el tamaño y posición del mapa
+      .center([-50, -20])
       .translate([width / 2, height / 2]);
 
     const path = d3.geoPath().projection(projection);
