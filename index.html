@@ -19,11 +19,18 @@
       margin: 40px;
     }
 
-    #gauges-left, #gauges-right {
+    #gauges-right {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
-      width: 30%;
+      width: 20%;
+    }
+
+    #gauges-left {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      width: 20%;
     }
 
     #maps-container {
@@ -31,12 +38,14 @@
       flex-direction: column;
       align-items: center;
       width: 60%;
+      margin-left: 50px;
     }
 
     .maps-row {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       width: 100%;
+      gap: 20px;
     }
 
     .map {
@@ -84,9 +93,10 @@
 
     .legend-container {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       width: 100%;
       margin-top: 20px;
+      gap: 20px; /* Añadir espacio entre las dos leyendas */
     }
 
     .legend {
@@ -134,8 +144,21 @@
       { code: "PER", proportion: 20.4, flag: "ico/per.png" },
       { code: "DOM", proportion: 10.2, flag: "ico/dom.png" },
       { code: "URY", proportion: 0.5, flag: "ico/ury.png" },
-      { code: "VEN", proportion: 2.7, flag: "ico/ven.png" }
-    ];
+      { code: "VEN", proportion: 2.7, flag: "ico/ven.png" },
+      { code: "ATG", proportion: 0.4, flag: "ico/atg.png" },
+      { code: "BHS", proportion: 0, flag: "ico/bhs.png" }, // S/D
+      { code: "BRB", proportion: 0, flag: "ico/brb.png" }, // S/D
+      { code: "BLZ", proportion: 0, flag: "ico/blz.png" }, // S/D
+      { code: "DMA", proportion: 3.8, flag: "ico/dma.png" },
+      { code: "GRD", proportion: 0, flag: "ico/grd.png" }, // S/D
+      { code: "GUY", proportion: 10.5, flag: "ico/guy.png" },
+      { code: "JAM", proportion: 0, flag: "ico/jam.png" }, // S/D
+      { code: "KNA", proportion: 0, flag: "ico/kna.png" }, // S/D
+      { code: "LCA", proportion: 0, flag: "ico/lca.png" }, // S/D
+      { code: "VCT", proportion: 3.2, flag: "ico/vct.png" },
+      { code: "TTO", proportion: 0, flag: "ico/tto.png" } // S/D
+
+        ];
 
     const dataAfro = [
       { code: "ARG", proportion: 0.7, flag: "ico/arg.png" },
@@ -157,8 +180,21 @@
       { code: "PER", proportion: 2.8, flag: "ico/per.png" },
       { code: "DOM", proportion: 29.8, flag: "ico/dom.png" },
       { code: "URY", proportion: 7.8, flag: "ico/ury.png" },
-      { code: "VEN", proportion: 3.6, flag: "ico/ven.png" }
-    ];
+      { code: "VEN", proportion: 3.6, flag: "ico/ven.png" },
+      { code: "ATG", proportion: 87.3, flag: "ico/atg.png" },
+      { code: "BHS", proportion: 90.6, flag: "ico/bhs.png" },
+      { code: "BRB", proportion: 92.4, flag: "ico/brb.png" },
+      { code: "BLZ", proportion: 0, flag: "ico/blz.png" }, // S/D
+      { code: "DMA", proportion: 84.5, flag: "ico/dma.png" },
+      { code: "GRD", proportion: 82.4, flag: "ico/grd.png" },
+      { code: "GUY", proportion: 29.3, flag: "ico/guy.png" },
+      { code: "JAM", proportion: 92.1, flag: "ico/jam.png" },
+      { code: "KNA", proportion: 92.5, flag: "ico/kna.png" },
+      { code: "LCA", proportion: 85.3, flag: "ico/lca.png" },
+      { code: "VCT", proportion: 71.2, flag: "ico/vct.png" },
+      { code: "TTO", proportion: 34.2, flag: "ico/tto.png" }
+];
+
 
     const universities = [
       { name: "Instituto de Educación Superior CIFMA", location: "Chaco", lat: -27.4606, lon: -58.9839, code: "ARG" },
@@ -315,7 +351,7 @@
     }
 
     function createContinuousLegend(containerId, colorScale, title, min, max) {
-      const legendWidth = 488; 
+      const legendWidth = 550; 
       const legendHeight = 10;
 
       const svg = d3.select(`#${containerId}`).append("svg")
