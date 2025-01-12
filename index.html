@@ -21,7 +21,7 @@
 
     #gauges-left, #gauges-right {
       display: grid;
-      grid-template-columns:  repeat(2, 1fr);
+      grid-template-columns:  repeat(2, 2fr);
       gap: 10px;
       width: 20%;
     }
@@ -49,7 +49,7 @@
 
     .legend {
       display: flex;
-      justify-content: space-around;
+      justify-content: center;
       margin-top: 10px;
       width: 100%;
     }
@@ -97,7 +97,7 @@
     .gauge label {
       display: block;
       font-size: 14px;
-      margin-top: 5px;
+      margin-bottom: 0px;
     }
   </style>
 </head>
@@ -149,29 +149,47 @@
     const dataIndigenous = [
       { code: "ARG", proportion: 2.8, flag: "ico/arg.png" },
       { code: "BOL", proportion: 41.5, flag: "ico/bol.png" },
+      { code: "BRA", proportion: 0.6, flag: "ico/bra.png" },
+      { code: "CHL", proportion: 12.4, flag: "ico/chl.png" },
       { code: "COL", proportion: 3.9, flag: "ico/col.png" },
+      { code: "CRI", proportion: 2.4, flag: "ico/cri.png" },
+      { code: "CUB", proportion: 0, flag: "ico/cub.png" },
       { code: "ECU", proportion: 7.7, flag: "ico/ecu.png" },
+      { code: "SLV", proportion: 1.1, flag: "ico/slv.png" },
       { code: "GTM", proportion: 43.4, flag: "ico/gtm.png" },
+      { code: "HTI", proportion: 0, flag: "ico/hti.png" },
       { code: "HND", proportion: 7.6, flag: "ico/hon.png" },
-      { code: "NIC", proportion: 5.5, flag: "ico/nic.png" },
       { code: "MEX", proportion: 18.4, flag: "ico/mex.png" },
+      { code: "NIC", proportion: 5.5, flag: "ico/nic.png" },
+      { code: "PAN", proportion: 15.5, flag: "ico/pan.png" },
+      { code: "PRY", proportion: 0.2, flag: "ico/pry.png" },
       { code: "PER", proportion: 20.4, flag: "ico/per.png" },
+      { code: "DOM", proportion: 10.2, flag: "ico/dom.png" },
+      { code: "URY", proportion: 0.5, flag: "ico/ury.png" },
       { code: "VEN", proportion: 2.7, flag: "ico/ven.png" }
     ];
-
     const dataAfro = [
-      { code: "ARG", proportion: 1.5, flag: "ico/arg.png" },
-      { code: "BOL", proportion: 3.2, flag: "ico/bol.png" },
-      { code: "COL", proportion: 10.5, flag: "ico/col.png" },
-      { code: "ECU", proportion: 6.7, flag: "ico/ecu.png" },
-      { code: "GTM", proportion: 1.2, flag: "ico/gtm.png" },
-      { code: "HND", proportion: 2.3, flag: "ico/hon.png" },
-      { code: "NIC", proportion: 4.8, flag: "ico/nic.png" },
-      { code: "MEX", proportion: 1.8, flag: "ico/mex.png" },
-      { code: "PER", proportion: 8.3, flag: "ico/per.png" },
-      { code: "VEN", proportion: 5.9, flag: "ico/ven.png" }
+      { code: "ARG", proportion: 0.7, flag: "ico/arg.png" },
+      { code: "BOL", proportion: 0.2, flag: "ico/bol.png" },
+      { code: "BRA", proportion: 55.5, flag: "ico/bra.png" },
+      { code: "CHL", proportion: 0.1, flag: "ico/chl.png" },
+      { code: "COL", proportion: 6.1, flag: "ico/col.png" },
+      { code: "CRI", proportion: 7.8, flag: "ico/cri.png" },
+      { code: "CUB", proportion: 9.3, flag: "ico/cub.png" },
+      { code: "ECU", proportion: 4.8, flag: "ico/ecu.png" },
+      { code: "SLV", proportion: 0.4, flag: "ico/slv.png" },
+      { code: "GTM", proportion: 0.2, flag: "ico/gtm.png" },
+      { code: "HTI", proportion: 95.5, flag: "ico/hti.png" },
+      { code: "HND", proportion: 1.3, flag: "ico/hon.png" },
+      { code: "MEX", proportion: 2.0, flag: "ico/mex.png" },
+      { code: "NIC", proportion: 3.1, flag: "ico/nic.png" },
+      { code: "PAN", proportion: 30.6, flag: "ico/pan.png" },
+      { code: "PRY", proportion: 0.06, flag: "ico/pry.png" },
+      { code: "PER", proportion: 2.8, flag: "ico/per.png" },
+      { code: "DOM", proportion: 29.8, flag: "ico/dom.png" },
+      { code: "URY", proportion: 7.8, flag: "ico/ury.png" },
+      { code: "VEN", proportion: 3.6, flag: "ico/ven.png" }
     ];
-
     const universities = [
       { name: "Instituto de Educación Superior CIFMA", location: "Chaco", lat: -27.4606, lon: -58.9839, code: "ARG" },
       { name: "Universidad quechua Casimiro Huanca", location: "Chimoré", lat: -16.9898, lon: -65.1386, code: "BOL" },
@@ -319,7 +337,7 @@
           .attr("class", "gauge-text")
           .text(`${d.proportion}%`);
 
-        gauge.append("div").style("margin-top", "5px").html(`<img src="${d.flag}" alt="${d.code}" style="height: 16px;"> ${d.code}`);
+        gauge.append("div").style("margin-top", "-45px").html(`<img src="${d.flag}" alt="${d.code}" style="height: 16px;"> ${d.code}`);
       });
     }
 
