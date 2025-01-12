@@ -21,7 +21,7 @@
 
     #gauges-left, #gauges-right {
       display: grid;
-      grid-template-columns:  repeat(3, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       width: 30%;
     }
@@ -45,24 +45,6 @@
       position: relative;
       border: 1px solid #ccc;
       overflow: hidden;
-    }
-
-    .legend {
-      display: flex;
-      justify-content: center;
-      margin-top: 10px;
-      width: 100%;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .color-box {
-      width: 20px;
-      height: 20px;
     }
 
     #tooltip {
@@ -99,7 +81,17 @@
       font-size: 14px;
       margin-bottom: 0px;
     }
-    
+
+    .legend-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .legend {
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -112,44 +104,9 @@
         <div id="map-indigenous" class="map"></div>
         <div id="map-afrodescendant" class="map"></div>
       </div>
-      <div class="maps-row">
-        <!-- Leyenda para Población Indígena -->
-        <div class="legend">
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #e5f5e0;"></div> 0% - 1%
-          </div>
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #a1d99b;"></div> 1% - 5%
-          </div>
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #74c476;"></div> 5% - 10%
-          </div>
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #31a354;"></div> 10% - 20%
-          </div>
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #006d2c;"></div> > 20%
-          </div>
-        </div>
-      
-        <!-- Leyenda para Población Afrodescendiente -->
-        <div class="legend">
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #efedf5;"></div> 0% - 1%
-          </div>
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #bcbddc;"></div> 1% - 10%
-          </div>
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #9e9ac8;"></div> 10% - 20%
-          </div>
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #756bb1;"></div> 20% - 50%
-          </div>
-          <div class="legend-item">
-            <div class="color-box" style="background-color: #54278f;"></div> > 50%
-          </div>
-        </div>
+      <div class="legend-container">
+        <div id="legend-indigenous" class="legend"></div>
+        <div id="legend-afro" class="legend"></div>
       </div>
     </div>
     <div id="gauges-right"></div>
@@ -179,6 +136,7 @@
       { code: "URY", proportion: 0.5, flag: "ico/ury.png" },
       { code: "VEN", proportion: 2.7, flag: "ico/ven.png" }
     ];
+
     const dataAfro = [
       { code: "ARG", proportion: 0.7, flag: "ico/arg.png" },
       { code: "BOL", proportion: 0.2, flag: "ico/bol.png" },
@@ -201,6 +159,7 @@
       { code: "URY", proportion: 7.8, flag: "ico/ury.png" },
       { code: "VEN", proportion: 3.6, flag: "ico/ven.png" }
     ];
+
     const universities = [
       { name: "Instituto de Educación Superior CIFMA", location: "Chaco", lat: -27.4606, lon: -58.9839, code: "ARG" },
       { name: "Universidad quechua Casimiro Huanca", location: "Chimoré", lat: -16.9898, lon: -65.1386, code: "BOL" },
@@ -245,131 +204,184 @@
       { name: "Universidad Nacional Experimental Indígena del Tauca", location: "Bolívar", lat: 8.134, lon: -63.537, code: "VEN" }
     ];
 
-    const colorScaleIndigenous = d3.scaleThreshold()
-  .domain([1, 5, 10, 20, 40])
-  .range(["#e5f5e0", "#a1d99b", "#74c476", "#31a354", "#006d2c"]);
 
-const colorScaleAfro = d3.scaleThreshold()
-  .domain([1, 10, 20, 50, 95])
-  .range(["#efedf5", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+    const colorScaleIndigenous = d3.scaleLinear()
+      .domain([0, d3.max(dataIndigenous, d => d.proportion)]) // Desde 0 hasta el máximo de proporción
+      .range(["#e5f5e0", "#006d2c"]); // De un verde claro a un verde oscuro
 
-function drawMap(containerId, data, colorScale, universities, universitiesGroup) {
-  const svg = d3.select(containerId).append("svg")
-    .attr("width", 600)
-    .attr("height", 600);
+    const colorScaleAfro = d3.scaleLinear()
+      .domain([0, d3.max(dataAfro, d => d.proportion)]) // Desde 0 hasta el máximo de proporción
+      .range(["#efedf5", "#54278f"]); // De un púrpura claro a un púrpura oscuro
 
-  const projection = d3.geoMercator()
-    .scale(300)
-    .center([-65, -20])
-    .translate([300, 300]);
+    function drawMap(containerId, data, colorScale, universities, universitiesGroup) {
+      const svg = d3.select(containerId).append("svg")
+        .attr("width", 600)
+        .attr("height", 600);
 
-  const path = d3.geoPath().projection(projection);
+      const projection = d3.geoMercator()
+        .scale(300)
+        .center([-65, -20])
+        .translate([300, 300]);
 
-  d3.json("custom.geo.json").then(geojson => {
-    svg.selectAll("path")
-      .data(geojson.features)
-      .enter()
-      .append("path")
-      .attr("d", path)
-      .attr("fill", d => {
-        const country = data.find(c => c.code === d.properties.sov_a3);
-        return country ? colorScale(country.proportion) : "#ccc";
-      })
-      .attr("stroke", "#333")
-      .attr("stroke-width", 0.5)
-      .on("mouseover", function(event, d) {
-        const country = data.find(c => c.code === d.properties.sov_a3);
-        d3.select("#tooltip")
-          .html(`<strong>${d.properties.name}</strong><br>Proporción: ${country ? country.proportion + "%" : "No disponible"}`)
-          .style("left", `${event.pageX + 5}px`)
-          .style("top", `${event.pageY + 5}px`)
-          .style("display", "block");
-      })
-      .on("mouseout", () => {
-        d3.select("#tooltip").style("display", "none");
+      const path = d3.geoPath().projection(projection);
+
+      d3.json("custom.geo.json").then(geojson => {
+        svg.selectAll("path")
+          .data(geojson.features)
+          .enter()
+          .append("path")
+          .attr("d", path)
+          .attr("fill", d => {
+            const country = data.find(c => c.code === d.properties.sov_a3);
+            return country ? colorScale(country.proportion) : "#ccc";
+          })
+          .attr("stroke", "#333")
+          .attr("stroke-width", 0.5)
+          .on("mouseover", function(event, d) {
+            const country = data.find(c => c.code === d.properties.sov_a3);
+            d3.select("#tooltip")
+              .html(`<strong>${d.properties.name}</strong><br>Proporción: ${country ? country.proportion + "%" : "No disponible"}`)
+              .style("left", `${event.pageX + 5}px`)
+              .style("top", `${event.pageY + 5}px`)
+              .style("display", "block");
+          })
+          .on("mouseout", () => {
+            d3.select("#tooltip").style("display", "none");
+          });
+
+        // Añadir universidades
+        universitiesGroup[containerId] = svg.selectAll("circle")
+          .data(universities)
+          .enter()
+          .append("circle")
+          .attr("cx", d => projection([d.lon, d.lat])[0])
+          .attr("cy", d => projection([d.lon, d.lat])[1])
+          .attr("r", 5)
+          .attr("fill", "red")
+          .attr("opacity", 0) // Inicialmente ocultas
+          .on("mouseover", function(event, d) {
+            d3.select("#tooltip")
+              .html(`<strong>${d.name}</strong><br>Ubicación: ${d.location}`)
+              .style("left", `${event.pageX + 5}px`)
+              .style("top", `${event.pageY + 5}px`)
+              .style("display", "block");
+          })
+          .on("mouseout", () => {
+            d3.select("#tooltip").style("display", "none");
+          });
+      });
+    }
+
+    function createGauges(containerId, data, colorScale) {
+      const gaugeWidth = 100, gaugeHeight = 100;
+
+      data.forEach(d => {
+        const gauge = d3.select(containerId).append("div").attr("class", "gauge");
+        const svg = gauge.append("svg").attr("width", gaugeWidth).attr("height", gaugeHeight);
+
+        const arc = d3.arc()
+          .innerRadius(30)
+          .outerRadius(40)
+          .startAngle(-Math.PI / 2);
+
+        svg.append("path")
+          .datum({ endAngle: Math.PI / 2 })
+          .style("fill", "#ddd")
+          .attr("d", arc)
+          .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
+
+        const foreground = svg.append("path")
+          .datum({ endAngle: -Math.PI / 2 })
+          .style("fill", colorScale(d.proportion))
+          .attr("d", arc)
+          .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
+
+        foreground.transition()
+          .duration(1000)
+          .attrTween("d", () => {
+            const interpolate = d3.interpolate(-Math.PI / 2, (d.proportion / 100) * Math.PI - Math.PI / 2);
+            return t => arc({ endAngle: interpolate(t) });
+          });
+
+        svg.append("text")
+          .attr("x", gaugeWidth / 2)
+          .attr("y", gaugeHeight / 2 + 5)
+          .attr("text-anchor", "middle")
+          .attr("class", "gauge-text")
+          .text(`${d.proportion}%`);
+
+        gauge.append("div").style("margin-top", "-45px").html(`<img src="${d.flag}" alt="${d.code}" style="height: 16px;"> ${d.code}`);
+      });
+    }
+
+    function createContinuousLegend(containerId, colorScale, title, min, max) {
+      const legendWidth = 488; 
+      const legendHeight = 10;
+
+      const svg = d3.select(`#${containerId}`).append("svg")
+        .attr("width", legendWidth)
+        .attr("height", 40);
+
+      const defs = svg.append("defs");
+      const gradient = defs.append("linearGradient")
+        .attr("id", `gradient-${containerId}`)
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "100%")
+        .attr("y2", "0%");
+
+      const stops = d3.range(0, 1.01, 0.01); 
+      stops.forEach(stop => {
+        gradient.append("stop")
+          .attr("offset", `${stop * 100}%`)
+          .attr("stop-color", colorScale(min + stop * (max - min)));
       });
 
-    // Add universities to the map
-    universitiesGroup[containerId] = svg.selectAll("circle")
-      .data(universities)
-      .enter()
-      .append("circle")
-      .attr("cx", d => projection([d.lon, d.lat])[0])
-      .attr("cy", d => projection([d.lon, d.lat])[1])
-      .attr("r", 5)
-      .attr("fill", "red")
-      .attr("opacity", 0) // Initially hidden
-      .on("mouseover", function(event, d) {
-        d3.select("#tooltip")
-          .html(`<strong>${d.name}</strong><br>Ubicación: ${d.location}`)
-          .style("left", `${event.pageX + 5}px`)
-          .style("top", `${event.pageY + 5}px`)
-          .style("display", "block");
-      })
-      .on("mouseout", () => {
-        d3.select("#tooltip").style("display", "none");
+      svg.append("rect")
+        .attr("width", legendWidth)
+        .attr("height", legendHeight)
+        .style("fill", `url(#gradient-${containerId})`);
+
+      svg.append("text")
+        .attr("x", 0)
+        .attr("y", legendHeight + 15)
+        .attr("text-anchor", "start")
+        .style("font-size", "12px")
+        .text(`${min}%`);
+
+      svg.append("text")
+        .attr("x", legendWidth)
+        .attr("y", legendHeight + 15)
+        .attr("text-anchor", "end")
+        .style("font-size", "12px")
+        .text(`${max}%`);
+
+      svg.append("text")
+        .attr("x", legendWidth / 2)
+        .attr("y", -5)
+        .attr("text-anchor", "middle")
+        .style("font-size", "14px")
+        .text(title);
+    }
+
+    const universitiesGroup = {};
+
+    drawMap("#map-indigenous", dataIndigenous, colorScaleIndigenous, universities, universitiesGroup);
+    drawMap("#map-afrodescendant", dataAfro, colorScaleAfro, universities, universitiesGroup);
+    createGauges("#gauges-left", dataIndigenous, colorScaleIndigenous);
+    createGauges("#gauges-right", dataAfro, colorScaleAfro);
+
+    createContinuousLegend("legend-indigenous", colorScaleIndigenous, "Población Indígena (%)", 0, d3.max(dataIndigenous, d => d.proportion));
+    createContinuousLegend("legend-afro", colorScaleAfro, "Población Afrodescendiente (%)", 0, d3.max(dataAfro, d => d.proportion));
+
+    d3.select("#toggle-button").on("click", () => {
+      const isVisible = universitiesGroup["#map-indigenous"].attr("opacity") === "1";
+      const newOpacity = isVisible ? 0 : 1;
+
+      Object.values(universitiesGroup).forEach(group => {
+        group.transition().duration(500).attr("opacity", newOpacity);
       });
-  });
-}
-
-function createGauges(containerId, data, colorScale) {
-  const gaugeWidth = 100, gaugeHeight = 100;
-
-  data.forEach(d => {
-    const gauge = d3.select(containerId).append("div").attr("class", "gauge");
-    const svg = gauge.append("svg").attr("width", gaugeWidth).attr("height", gaugeHeight);
-
-    const arc = d3.arc()
-      .innerRadius(30)
-      .outerRadius(40)
-      .startAngle(-Math.PI / 2);
-
-    svg.append("path")
-      .datum({ endAngle: Math.PI / 2 })
-      .style("fill", "#ddd")
-      .attr("d", arc)
-      .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
-
-    const foreground = svg.append("path")
-      .datum({ endAngle: -Math.PI / 2 })
-      .style("fill", colorScale(d.proportion))
-      .attr("d", arc)
-      .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
-
-    foreground.transition()
-      .duration(1000)
-      .attrTween("d", () => {
-        const interpolate = d3.interpolate(-Math.PI / 2, (d.proportion / 100) * Math.PI - Math.PI / 2);
-        return t => arc({ endAngle: interpolate(t) });
-      });
-
-    svg.append("text")
-      .attr("x", gaugeWidth / 2)
-      .attr("y", gaugeHeight / 2 + 5)
-      .attr("text-anchor", "middle")
-      .attr("class", "gauge-text")
-      .text(`${d.proportion}%`);
-
-    gauge.append("div").style("margin-top", "-45px").html(`<img src="${d.flag}" alt="${d.code}" style="height: 16px;"> ${d.code}`);
-  });
-}
-
-const universitiesGroup = {};
-
-drawMap("#map-indigenous", dataIndigenous, colorScaleIndigenous, universities, universitiesGroup);
-drawMap("#map-afrodescendant", dataAfro, colorScaleAfro, universities, universitiesGroup);
-createGauges("#gauges-left", dataIndigenous, colorScaleIndigenous);
-createGauges("#gauges-right", dataAfro, colorScaleAfro);
-
-// Toggle button functionality for universities
-d3.select("#toggle-button").on("click", () => {
-  const isVisible = universitiesGroup["#map-indigenous"].attr("opacity") === "1";
-  const newOpacity = isVisible ? 0 : 1;
-
-  Object.values(universitiesGroup).forEach(group => {
-    group.transition().duration(500).attr("opacity", newOpacity);
-  });
-});
+    });
 
   </script>
 </body>
