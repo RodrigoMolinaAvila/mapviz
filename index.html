@@ -111,32 +111,41 @@
         <div id="map-afrodescendant" class="map"></div>
       </div>
       <div class="maps-row">
+        <!-- Leyenda para Población Indígena -->
         <div class="legend">
           <div class="legend-item">
-            <div class="color-box" style="background-color: #e5f5e0;"></div> 0% - 10%
+            <div class="color-box" style="background-color: #e5f5e0;"></div> 0% - 1%
           </div>
           <div class="legend-item">
-            <div class="color-box" style="background-color: #a1d99b;"></div> 10% - 20%
+            <div class="color-box" style="background-color: #a1d99b;"></div> 1% - 5%
           </div>
           <div class="legend-item">
-            <div class="color-box" style="background-color: #31a354;"></div> 20% - 30%
+            <div class="color-box" style="background-color: #74c476;"></div> 5% - 10%
           </div>
           <div class="legend-item">
-            <div class="color-box" style="background-color: #006d2c;"></div> > 30%
+            <div class="color-box" style="background-color: #31a354;"></div> 10% - 20%
+          </div>
+          <div class="legend-item">
+            <div class="color-box" style="background-color: #006d2c;"></div> > 20%
           </div>
         </div>
+      
+        <!-- Leyenda para Población Afrodescendiente -->
         <div class="legend">
           <div class="legend-item">
-            <div class="color-box" style="background-color: #efedf5;"></div> 0% - 10%
+            <div class="color-box" style="background-color: #efedf5;"></div> 0% - 1%
           </div>
           <div class="legend-item">
-            <div class="color-box" style="background-color: #bcbddc;"></div> 10% - 20%
+            <div class="color-box" style="background-color: #bcbddc;"></div> 1% - 10%
           </div>
           <div class="legend-item">
-            <div class="color-box" style="background-color: #756bb1;"></div> 20% - 30%
+            <div class="color-box" style="background-color: #9e9ac8;"></div> 10% - 20%
           </div>
           <div class="legend-item">
-            <div class="color-box" style="background-color: #54278f;"></div> > 30%
+            <div class="color-box" style="background-color: #756bb1;"></div> 20% - 50%
+          </div>
+          <div class="legend-item">
+            <div class="color-box" style="background-color: #54278f;"></div> > 50%
           </div>
         </div>
       </div>
@@ -153,7 +162,7 @@
       { code: "CHL", proportion: 12.4, flag: "ico/chl.png" },
       { code: "COL", proportion: 3.9, flag: "ico/col.png" },
       { code: "CRI", proportion: 2.4, flag: "ico/cri.png" },
-      { code: "CUB", proportion: 0, flag: "ico/cub.png" },
+      { code: "CU1", proportion: 0, flag: "ico/cub.png" },
       { code: "ECU", proportion: 7.7, flag: "ico/ecu.png" },
       { code: "SLV", proportion: 1.1, flag: "ico/slv.png" },
       { code: "GTM", proportion: 43.4, flag: "ico/gtm.png" },
@@ -175,7 +184,7 @@
       { code: "CHL", proportion: 0.1, flag: "ico/chl.png" },
       { code: "COL", proportion: 6.1, flag: "ico/col.png" },
       { code: "CRI", proportion: 7.8, flag: "ico/cri.png" },
-      { code: "CUB", proportion: 9.3, flag: "ico/cub.png" },
+      { code: "CU1", proportion: 9.3, flag: "ico/cub.png" },
       { code: "ECU", proportion: 4.8, flag: "ico/ecu.png" },
       { code: "SLV", proportion: 0.4, flag: "ico/slv.png" },
       { code: "GTM", proportion: 0.2, flag: "ico/gtm.png" },
@@ -235,12 +244,12 @@
     ];
 
     const colorScaleIndigenous = d3.scaleThreshold()
-      .domain([10, 20, 30])
-      .range(["#e5f5e0", "#a1d99b", "#31a354", "#006d2c"]);
+      .domain([1, 5, 10, 20, 40])
+      .range(["#e5f5e0", "#a1d99b", "#74c476", "#31a354", "#006d2c"]);
 
-    const colorScaleAfro = d3.scaleThreshold()
-      .domain([10, 20, 30])
-      .range(["#efedf5", "#bcbddc", "#756bb1", "#54278f"]);
+      const colorScaleAfro = d3.scaleThreshold()
+      .domain([1, 10, 20, 50, 95])
+      .range(["#efedf5", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
 
     function drawMap(containerId, data, colorScale) {
       const svg = d3.select(containerId).append("svg")
