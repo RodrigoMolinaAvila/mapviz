@@ -19,17 +19,10 @@
       margin: 40px;
     }
 
-    #gauges-right {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      width: 20%;
-    }
-
     #gauges-left {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
       width: 20%;
     }
 
@@ -37,14 +30,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 60%;
-      margin-left: 50px;
+      width: 70%;
+      margin-left: 100px;
     }
 
     .maps-row {
       display: flex;
-      justify-content: center;
-      width: 100%;
+      justify-content: space-between;
+      width: 90%;
       gap: 20px;
     }
 
@@ -66,11 +59,6 @@
       display: none;
     }
 
-    .highlight {
-      stroke: #ffcc00;
-      stroke-width: 2px;
-    }
-
     .gauge {
       text-align: center;
     }
@@ -85,22 +73,24 @@
       font-weight: bold;
     }
 
-    .gauge label {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 0px;
-    }
-
     .legend-container {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      margin-top: 20px;
-      gap: 20px; /* Añadir espacio entre las dos leyendas */
+      text-align: center;
+      margin-top: 10px;
     }
 
-    .legend {
+    #legend-universities {
       text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-right: 135px;
+    }
+
+    #population-info {
+      text-align: center;
+      margin-top: -15px;
+      font-size: 14px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -109,92 +99,92 @@
   <div id="container">
     <div id="gauges-left"></div>
     <div id="maps-container">
-      <button id="toggle-button">Show/Hide Indigenous Universities</button>
+      <button id="toggle-map-button">Show Afrodescendant Population</button>
       <div class="maps-row">
-        <div id="map-indigenous" class="map"></div>
-        <div id="map-afrodescendant" class="map"></div>
+        <div id="map-indigenous-afro" class="map"></div>
+        <div id="map-universities" class="map"></div>
       </div>
-      <div class="legend-container">
-        <div id="legend-indigenous" class="legend"></div>
-        <div id="legend-afro" class="legend"></div>
+      <div class="maps-row">
+        <div class="legend-container">
+          <div id="legend-indigenous-afro"></div>
+          <div id="population-info">Indigenous Population</div>
+        </div>
+        <div id="legend-universities">Locations of Indigenous Universities</div>
       </div>
     </div>
-    <div id="gauges-right"></div>
   </div>
   <div id="tooltip"></div>
 
   <script>
-    const dataIndigenous = [
-      { code: "ARG", proportion: 2.8, flag: "ico/arg.png" },
-      { code: "BOL", proportion: 41.5, flag: "ico/bol.png" },
-      { code: "BRA", proportion: 0.6, flag: "ico/bra.png" },
-      { code: "CHL", proportion: 12.4, flag: "ico/chl.png" },
-      { code: "COL", proportion: 3.9, flag: "ico/col.png" },
-      { code: "CRI", proportion: 2.4, flag: "ico/cri.png" },
-      { code: "CU1", proportion: 0, flag: "ico/cub.png" },
-      { code: "ECU", proportion: 7.7, flag: "ico/ecu.png" },
-      { code: "SLV", proportion: 1.1, flag: "ico/slv.png" },
-      { code: "GTM", proportion: 43.4, flag: "ico/gtm.png" },
-      { code: "HTI", proportion: 0, flag: "ico/hti.png" },
-      { code: "HND", proportion: 7.6, flag: "ico/hon.png" },
-      { code: "MEX", proportion: 18.4, flag: "ico/mex.png" },
-      { code: "NIC", proportion: 5.5, flag: "ico/nic.png" },
-      { code: "PAN", proportion: 15.5, flag: "ico/pan.png" },
-      { code: "PRY", proportion: 0.2, flag: "ico/pry.png" },
-      { code: "PER", proportion: 20.4, flag: "ico/per.png" },
-      { code: "DOM", proportion: 10.2, flag: "ico/dom.png" },
-      { code: "URY", proportion: 0.5, flag: "ico/ury.png" },
-      { code: "VEN", proportion: 2.7, flag: "ico/ven.png" },
-      { code: "ATG", proportion: 0.4, flag: "ico/atg.png" },
-      { code: "BHS", proportion: 0, flag: "ico/bhs.png" }, // S/D
-      { code: "BRB", proportion: 0, flag: "ico/brb.png" }, // S/D
-      { code: "BLZ", proportion: 0, flag: "ico/blz.png" }, // S/D
-      { code: "DMA", proportion: 3.8, flag: "ico/dma.png" },
-      { code: "GRD", proportion: 0, flag: "ico/grd.png" }, // S/D
-      { code: "GUY", proportion: 10.5, flag: "ico/guy.png" },
-      { code: "JAM", proportion: 0, flag: "ico/jam.png" }, // S/D
-      { code: "KNA", proportion: 0, flag: "ico/kna.png" }, // S/D
-      { code: "LCA", proportion: 0, flag: "ico/lca.png" }, // S/D
-      { code: "VCT", proportion: 3.2, flag: "ico/vct.png" },
-      { code: "TTO", proportion: 0, flag: "ico/tto.png" } // S/D
-
-        ];
-
-    const dataAfro = [
-      { code: "ARG", proportion: 0.7, flag: "ico/arg.png" },
-      { code: "BOL", proportion: 0.2, flag: "ico/bol.png" },
-      { code: "BRA", proportion: 55.5, flag: "ico/bra.png" },
-      { code: "CHL", proportion: 0.1, flag: "ico/chl.png" },
-      { code: "COL", proportion: 6.1, flag: "ico/col.png" },
-      { code: "CRI", proportion: 7.8, flag: "ico/cri.png" },
-      { code: "CU1", proportion: 9.3, flag: "ico/cub.png" },
-      { code: "ECU", proportion: 4.8, flag: "ico/ecu.png" },
-      { code: "SLV", proportion: 0.4, flag: "ico/slv.png" },
-      { code: "GTM", proportion: 0.2, flag: "ico/gtm.png" },
-      { code: "HTI", proportion: 95.5, flag: "ico/hti.png" },
-      { code: "HND", proportion: 1.3, flag: "ico/hon.png" },
-      { code: "MEX", proportion: 2.0, flag: "ico/mex.png" },
-      { code: "NIC", proportion: 3.1, flag: "ico/nic.png" },
-      { code: "PAN", proportion: 30.6, flag: "ico/pan.png" },
-      { code: "PRY", proportion: 0.06, flag: "ico/pry.png" },
-      { code: "PER", proportion: 2.8, flag: "ico/per.png" },
-      { code: "DOM", proportion: 29.8, flag: "ico/dom.png" },
-      { code: "URY", proportion: 7.8, flag: "ico/ury.png" },
-      { code: "VEN", proportion: 3.6, flag: "ico/ven.png" },
-      { code: "ATG", proportion: 87.3, flag: "ico/atg.png" },
-      { code: "BHS", proportion: 90.6, flag: "ico/bhs.png" },
-      { code: "BRB", proportion: 92.4, flag: "ico/brb.png" },
-      { code: "BLZ", proportion: 0, flag: "ico/blz.png" }, // S/D
-      { code: "DMA", proportion: 84.5, flag: "ico/dma.png" },
-      { code: "GRD", proportion: 82.4, flag: "ico/grd.png" },
-      { code: "GUY", proportion: 29.3, flag: "ico/guy.png" },
-      { code: "JAM", proportion: 92.1, flag: "ico/jam.png" },
-      { code: "KNA", proportion: 92.5, flag: "ico/kna.png" },
-      { code: "LCA", proportion: 85.3, flag: "ico/lca.png" },
-      { code: "VCT", proportion: 71.2, flag: "ico/vct.png" },
-      { code: "TTO", proportion: 34.2, flag: "ico/tto.png" }
+const dataAfro = [
+  { code: "ARG", proportion: 0.66, flag: "ico/arg.png" },
+  { code: "ATG", proportion: 87.3, flag: "ico/atg.png" },
+  { code: "BHS", proportion: 90.6, flag: "ico/bhs.png" },
+  { code: "BLZ", proportion: 0, flag: "ico/blz.png" }, // S/D
+  { code: "BOL", proportion: 0.23, flag: "ico/bol.png" },
+  { code: "BRA", proportion: 55.51, flag: "ico/bra.png" },
+  { code: "BRB", proportion: 92.4, flag: "ico/brb.png" },
+  { code: "CHL", proportion: 0.06, flag: "ico/chl.png" },
+  { code: "COL", proportion: 6.11, flag: "ico/col.png" },
+  { code: "CRI", proportion: 7.77, flag: "ico/cri.png" },
+  { code: "CU1", proportion: 9.26, flag: "ico/cub.png" },
+  { code: "DMA", proportion: 84.5, flag: "ico/dma.png" },
+  { code: "DOM", proportion: 29.79, flag: "ico/dom.png" },
+  { code: "ECU", proportion: 4.81, flag: "ico/ecu.png" },
+  { code: "GRD", proportion: 82.4, flag: "ico/grd.png" },
+  { code: "GUY", proportion: 29.3, flag: "ico/guy.png" },
+  { code: "GTM", proportion: 0.19, flag: "ico/gtm.png" },
+  { code: "HND", proportion: 1.34, flag: "ico/hon.png" },
+  { code: "HTI", proportion: 95.5, flag: "ico/hti.png" },
+  { code: "JAM", proportion: 92.1, flag: "ico/jam.png" },
+  { code: "KNA", proportion: 92.5, flag: "ico/kna.png" },
+  { code: "LCA", proportion: 85.3, flag: "ico/lca.png" },
+  { code: "MEX", proportion: 2.04, flag: "ico/mex.png" },
+  { code: "NIC", proportion: 3.08, flag: "ico/nic.png" },
+  { code: "PAN", proportion: 30.6, flag: "ico/pan.png" },
+  { code: "PER", proportion: 2.82, flag: "ico/per.png" },
+  { code: "PRY", proportion: 0.06, flag: "ico/pry.png" },
+  { code: "SLV", proportion: 0.43, flag: "ico/slv.png" },
+  { code: "TTO", proportion: 34.2, flag: "ico/tto.png" },
+  { code: "URY", proportion: 7.76, flag: "ico/ury.png" },
+  { code: "VEN", proportion: 3.6, flag: "ico/ven.png" },
+  { code: "VCT", proportion: 71.2, flag: "ico/vct.png" }
 ];
 
+const dataIndigenous = [
+  { code: "ARG", proportion: 2.85, flag: "ico/arg.png" },
+  { code: "ATG", proportion: 0.4, flag: "ico/atg.png" },
+  { code: "BHS", proportion: 0, flag: "ico/bhs.png" }, // S/D
+  { code: "BLZ", proportion: 0, flag: "ico/blz.png" }, // S/D
+  { code: "BOL", proportion: 41.52, flag: "ico/bol.png" },
+  { code: "BRA", proportion: 0.6, flag: "ico/bra.png" },
+  { code: "BRB", proportion: 0, flag: "ico/brb.png" }, // S/D
+  { code: "CHL", proportion: 12.44, flag: "ico/chl.png" },
+  { code: "COL", proportion: 3.95, flag: "ico/col.png" },
+  { code: "CRI", proportion: 2.42, flag: "ico/cri.png" },
+  { code: "CU1", proportion: 0, flag: "ico/cub.png" }, // S/D
+  { code: "DMA", proportion: 3.8, flag: "ico/dma.png" },
+  { code: "DOM", proportion: 33.52, flag: "ico/dom.png" },
+  { code: "ECU", proportion: 7.69, flag: "ico/ecu.png" },
+  { code: "GRD", proportion: 0, flag: "ico/grd.png" }, // S/D
+  { code: "GTM", proportion: 43.43, flag: "ico/gtm.png" },
+  { code: "GUY", proportion: 10.5, flag: "ico/guy.png" },
+  { code: "HND", proportion: 7.6, flag: "ico/hon.png" },
+  { code: "HTI", proportion: 0, flag: "ico/hti.png" }, // S/D
+  { code: "JAM", proportion: 0, flag: "ico/jam.png" }, // S/D
+  { code: "KNA", proportion: 0, flag: "ico/kna.png" }, // S/D
+  { code: "LCA", proportion: 0, flag: "ico/lca.png" }, // S/D
+  { code: "MEX", proportion: 18.43, flag: "ico/mex.png" },
+  { code: "NIC", proportion: 5.55, flag: "ico/nic.png" },
+  { code: "PAN", proportion: 15.51, flag: "ico/pan.png" },
+  { code: "PER", proportion: 20.37, flag: "ico/per.png" },
+  { code: "PRY", proportion: 2.29, flag: "ico/pry.png" },
+  { code: "SLV", proportion: 1.13, flag: "ico/slv.png" },
+  { code: "TTO", proportion: 0, flag: "ico/tto.png" }, // S/D
+  { code: "URY", proportion: 4.85, flag: "ico/ury.png" },
+  { code: "VEN", proportion: 2.66, flag: "ico/ven.png" },
+  { code: "VCT", proportion: 3.2, flag: "ico/vct.png" }
+];
 
     const universities = [
       { name: "Instituto de Educación Superior CIFMA", location: "Chaco", lat: -27.4606, lon: -58.9839, code: "ARG" },
@@ -241,15 +231,13 @@
     ];
 
 
-    const colorScaleIndigenous = d3.scaleLinear()
-      .domain([0, d3.max(dataIndigenous, d => d.proportion)]) // Desde 0 hasta el máximo de proporción
-      .range(["#e5f5e0", "#006d2c"]); // De un verde claro a un verde oscuro
+    let currentData = dataIndigenous;
+    let currentColorScale = d3.scaleLinear()
+      .domain([0, d3.max(dataIndigenous, d => d.proportion)])
+      .range(["#e5f5e0", "#006d2c"]);
 
-    const colorScaleAfro = d3.scaleLinear()
-      .domain([0, d3.max(dataAfro, d => d.proportion)]) // Desde 0 hasta el máximo de proporción
-      .range(["#efedf5", "#54278f"]); // De un púrpura claro a un púrpura oscuro
-
-    function drawMap(containerId, data, colorScale, universities, universitiesGroup) {
+    function drawMap(containerId, data, colorScale) {
+      d3.select(containerId).html("");
       const svg = d3.select(containerId).append("svg")
         .attr("width", 600)
         .attr("height", 600);
@@ -276,28 +264,7 @@
           .on("mouseover", function(event, d) {
             const country = data.find(c => c.code === d.properties.sov_a3);
             d3.select("#tooltip")
-              .html(`<strong>${d.properties.name}</strong><br>Proporción: ${country ? country.proportion + "%" : "No disponible"}`)
-              .style("left", `${event.pageX + 5}px`)
-              .style("top", `${event.pageY + 5}px`)
-              .style("display", "block");
-          })
-          .on("mouseout", () => {
-            d3.select("#tooltip").style("display", "none");
-          });
-
-        // Añadir universidades
-        universitiesGroup[containerId] = svg.selectAll("circle")
-          .data(universities)
-          .enter()
-          .append("circle")
-          .attr("cx", d => projection([d.lon, d.lat])[0])
-          .attr("cy", d => projection([d.lon, d.lat])[1])
-          .attr("r", 5)
-          .attr("fill", "red")
-          .attr("opacity", 0) // Inicialmente ocultas
-          .on("mouseover", function(event, d) {
-            d3.select("#tooltip")
-              .html(`<strong>${d.name}</strong><br>Ubicación: ${d.location}`)
+              .html(`<strong>${d.properties.name}</strong><br>Proportion: ${country ? country.proportion + "%" : "No data"}`)
               .style("left", `${event.pageX + 5}px`)
               .style("top", `${event.pageY + 5}px`)
               .style("display", "block");
@@ -309,11 +276,10 @@
     }
 
     function createGauges(containerId, data, colorScale) {
-      const gaugeWidth = 100, gaugeHeight = 100;
-
+      d3.select(containerId).html("");
       data.forEach(d => {
         const gauge = d3.select(containerId).append("div").attr("class", "gauge");
-        const svg = gauge.append("svg").attr("width", gaugeWidth).attr("height", gaugeHeight);
+        const svg = gauge.append("svg").attr("width", 100).attr("height", 100);
 
         const arc = d3.arc()
           .innerRadius(30)
@@ -324,36 +290,37 @@
           .datum({ endAngle: Math.PI / 2 })
           .style("fill", "#ddd")
           .attr("d", arc)
-          .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
+          .attr("transform", "translate(50,50)");
 
         const foreground = svg.append("path")
           .datum({ endAngle: -Math.PI / 2 })
           .style("fill", colorScale(d.proportion))
           .attr("d", arc)
-          .attr("transform", `translate(${gaugeWidth / 2}, ${gaugeHeight / 2})`);
+          .attr("transform", "translate(50,50)");
 
         foreground.transition()
-          .duration(1000)
+          .duration(500)
           .attrTween("d", () => {
             const interpolate = d3.interpolate(-Math.PI / 2, (d.proportion / 100) * Math.PI - Math.PI / 2);
             return t => arc({ endAngle: interpolate(t) });
           });
 
         svg.append("text")
-          .attr("x", gaugeWidth / 2)
-          .attr("y", gaugeHeight / 2 + 5)
+          .attr("x", 50)
+          .attr("y", 75)
           .attr("text-anchor", "middle")
           .attr("class", "gauge-text")
           .text(`${d.proportion}%`);
 
-        gauge.append("div").style("margin-top", "-45px").html(`<img src="${d.flag}" alt="${d.code}" style="height: 16px;"> ${d.code}`);
+        gauge.append("div").style("margin-top", "-20px").html(`<img src="${d.flag}" alt="${d.code}" style="height: 16px;"> ${d.code}`);
       });
     }
 
-    function createContinuousLegend(containerId, colorScale, title, min, max) {
-      const legendWidth = 494; 
+    function createContinuousLegend(containerId, colorScale, min, max) {
+      const legendWidth = 514;
       const legendHeight = 10;
 
+      d3.select(`#${containerId}`).html("");
       const svg = d3.select(`#${containerId}`).append("svg")
         .attr("width", legendWidth)
         .attr("height", 40);
@@ -366,7 +333,7 @@
         .attr("x2", "100%")
         .attr("y2", "0%");
 
-      const stops = d3.range(0, 1.01, 0.01); 
+      const stops = d3.range(0, 1.01, 0.01);
       stops.forEach(stop => {
         gradient.append("stop")
           .attr("offset", `${stop * 100}%`)
@@ -391,34 +358,77 @@
         .attr("text-anchor", "end")
         .style("font-size", "12px")
         .text(`${max}%`);
-
-      svg.append("text")
-        .attr("x", legendWidth / 2)
-        .attr("y", -5)
-        .attr("text-anchor", "middle")
-        .style("font-size", "14px")
-        .text(title);
     }
 
-    const universitiesGroup = {};
+    function drawUniversities(containerId, universities) {
+      d3.select(containerId).html("");
+      const svg = d3.select(containerId).append("svg")
+        .attr("width", 600)
+        .attr("height", 600);
 
-    drawMap("#map-indigenous", dataIndigenous, colorScaleIndigenous, universities, universitiesGroup);
-    drawMap("#map-afrodescendant", dataAfro, colorScaleAfro, universities, universitiesGroup);
-    createGauges("#gauges-left", dataIndigenous, colorScaleIndigenous);
-    createGauges("#gauges-right", dataAfro, colorScaleAfro);
+      const projection = d3.geoMercator()
+        .scale(300)
+        .center([-65, -20])
+        .translate([300, 300]);
 
-    createContinuousLegend("legend-indigenous", colorScaleIndigenous, "Población Indígena (%)", 0, d3.max(dataIndigenous, d => d.proportion));
-    createContinuousLegend("legend-afro", colorScaleAfro, "Población Afrodescendiente (%)", 0, d3.max(dataAfro, d => d.proportion));
+      d3.json("custom.geo.json").then(geojson => {
+        svg.selectAll("path")
+          .data(geojson.features)
+          .enter()
+          .append("path")
+          .attr("d", d3.geoPath().projection(projection))
+          .attr("fill", "#ccc")
+          .attr("stroke", "#333")
+          .attr("stroke-width", 0.5);
 
-    d3.select("#toggle-button").on("click", () => {
-      const isVisible = universitiesGroup["#map-indigenous"].attr("opacity") === "1";
-      const newOpacity = isVisible ? 0 : 1;
-
-      Object.values(universitiesGroup).forEach(group => {
-        group.transition().duration(500).attr("opacity", newOpacity);
+        svg.selectAll("circle")
+          .data(universities)
+          .enter()
+          .append("circle")
+          .attr("cx", d => projection([d.lon, d.lat])[0])
+          .attr("cy", d => projection([d.lon, d.lat])[1])
+          .attr("r", 5)
+          .attr("fill", "red")
+          .on("mouseover", function(event, d) {
+            d3.select("#tooltip")
+              .html(`<strong>${d.name}</strong><br>Location: ${d.location}`)
+              .style("left", `${event.pageX + 5}px`)
+              .style("top", `${event.pageY + 5}px`)
+              .style("display", "block");
+          })
+          .on("mouseout", () => {
+            d3.select("#tooltip").style("display", "none");
+          });
       });
+    }
+
+    function updatePopulationInfo(isIndigenous) {
+      const infoText = isIndigenous
+        ? "% of Indigenous Population"
+        : "% of Afrodescendant Population";
+      d3.select("#population-info").text(infoText);
+    }
+
+    function updateMapAndGauges(data, colorScale) {
+      drawMap("#map-indigenous-afro", data, colorScale);
+      createGauges("#gauges-left", data, colorScale);
+      createContinuousLegend("legend-indigenous-afro", colorScale, 0, d3.max(data, d => d.proportion));
+    }
+
+    d3.select("#toggle-map-button").on("click", function () {
+      const isIndigenous = currentData === dataIndigenous;
+      currentData = isIndigenous ? dataAfro : dataIndigenous;
+      currentColorScale = d3.scaleLinear()
+        .domain([0, d3.max(currentData, d => d.proportion)])
+        .range(isIndigenous ? ["#efedf5", "#54278f"] : ["#e5f5e0", "#006d2c"]);
+
+      d3.select(this).text(isIndigenous ? "Show Indigenous Population" : "Show Afrodescendant Population");
+      updatePopulationInfo(!isIndigenous);
+      updateMapAndGauges(currentData, currentColorScale);
     });
 
+    updateMapAndGauges(dataIndigenous, currentColorScale);
+    drawUniversities("#map-universities", universities);
   </script>
 </body>
 </html>
